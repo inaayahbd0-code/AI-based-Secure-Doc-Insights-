@@ -1,12 +1,11 @@
+import React from 'react';
+
 const Mainbar = () => {
   return (
-    <div className="flex">
+    <div >
     
-      {/* Sidebar */}
-      <Sidebar />
-      <Copilot/>
       {/* Main Content */}
-      <div className=" bg-gradient-to-b from-blue-950 via-blue-900 to-cyan-700 min-h-screen w-screen">
+      <div className=" bg-gradient-to-b from-blue-950 via-blue-900 to-cyan-700 min-h-screen w-full">
         <div className="text-3xl font-bold text-center text-cyan-500 font-bold pt-8  justify-center items-center ">
           AI SECURE DOCUMENT INSIGHTS
         </div>
