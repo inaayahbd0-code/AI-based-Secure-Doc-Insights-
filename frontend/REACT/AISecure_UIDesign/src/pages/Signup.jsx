@@ -3,7 +3,7 @@ import React from 'react';
 const Signup = () => {
   return (
     <div className="min-h-screen bg-indigo-950 flex justify-center items-center">
-      <div className="w-[520px] mt-10 bg-indigo-900 border-2 border-indigo-700 rounded-xl p-10
+      <div className="w-[520px] mt-10 bg-indigo-950 border-2 shadow-2xl border-black-950 rounded-xl p-10
                       flex flex-col gap-5
                       transition-all duration-300
                       hover:shadow-[0_0_20px_#22d3ee]">
@@ -81,6 +81,6 @@ const Signup = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Signup;
