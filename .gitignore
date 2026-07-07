@@ -4,6 +4,9 @@ node_modules/
 venv/
 __pycache__/
 *.pyc
+app/uploads/
+backend/test_jwt.py
+backend/test_password.py
 
 # Environment
 .env
