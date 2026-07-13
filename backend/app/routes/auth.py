@@ -21,16 +21,21 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
-
+# Register the user with email and add it to the db
 @router.post("/register", response_model=UserResponse)
-async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_user(
+    user_data: UserCreate, 
+    db: AsyncSession = Depends(get_db)
+):
+    # Verify if user already exists
     result = await db.execute(select(User).where(User.email == user_data.email))
 
     existing_user = result.scalar_one_or_none()
 
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+     
+    # If user does not exist, create a new row in db and hash passwd
     new_user = User(
         username = user_data.username,
         email=user_data.email,
@@ -44,9 +49,14 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
     return new_user
 
 @router.post("/login", response_model=TokenResponse)
-async def login_user(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+async def login_user(
+    user_data: UserLogin, 
+    db: AsyncSession = Depends(get_db)
+):
+    # Verify if email exists already
     result = await db.execute(select(User).where(User.email == user_data.email))
 
+    # Fetch the row
     user = result.scalar_one_or_none()
 
     if not user:
@@ -55,8 +65,9 @@ async def login_user(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     password_valid = verify_password(user_data.password,user.hashed_password)
 
     if not password_valid:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+       raise HTTPException(status_code=401, detail="Invalid email or password")
     
+    # Fetch the created jwt token for user 
     token = create_access_token(
         {
             "sub": str(user.id)

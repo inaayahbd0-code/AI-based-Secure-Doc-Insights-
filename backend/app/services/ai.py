@@ -11,7 +11,7 @@ client = genai.Client(
     api_key=os.getenv("GOOGLE_API_KEY")
 )
 
-
+# Prompt to gemini to generate summary
 def generate_summary(
     text: str
 ):

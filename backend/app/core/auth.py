@@ -14,12 +14,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/auth/login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     try:
-        payload = jwt.decode(
+        payload = jwt.decode(       # Verify Jwt token
             token, SECRET_KEY,
             algorithms = [ALGORITHM]
         )
 
-        user_id = payload.get("sub")
+        user_id = payload.get("sub")    # Generate a user_id
 
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -29,9 +29,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
 
     result = await db.execute(select(User).where(User.id == user_id))
 
-    user = result.scalar_one_or_none()
+    user = result.scalar_one_or_none()  # Fetch a single row
 
-    if user  is None:
+    if user  is None:   # Verify user
         raise HTTPException(status_code=401, detail="User not found")
 
 

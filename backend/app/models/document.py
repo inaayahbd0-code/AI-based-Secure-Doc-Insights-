@@ -22,7 +22,6 @@ class Document(Base):
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     
     chunks = relationship("DocumentChunk",back_populates="document",cascade="all, delete")
-
-
+    messages = relationship("Message", back_populates="document", cascade="all, delete-orphan")
 
     user = relationship("User", back_populates="documents")

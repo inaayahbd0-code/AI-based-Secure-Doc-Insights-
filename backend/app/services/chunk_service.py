@@ -1,6 +1,6 @@
 from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+from app.services.embedding_service import generate_embedding
 
 
 def chunk_text(
@@ -19,6 +19,7 @@ def chunk_text(
 
     return chunks
 
+# Splits text
 def split_text(
     text: str
 ):
@@ -32,13 +33,15 @@ def split_text(
 
     return splitter.split_text(text)
 
+# Creates chunks of the extracted text
 def create_chunks(text: str, document_id):
     chunks = split_text(text)
 
     return [
         {
             "document_id" : document_id,
-            "chunk_text": chunk
+            "chunk_text": chunk,
+            "embedding": generate_embedding(chunk)
         }
         for chunk in chunks
     ]

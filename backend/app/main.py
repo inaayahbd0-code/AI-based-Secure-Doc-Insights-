@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from app.routes.documents import router as document_router
-from app.routes import auth
+from app.routes import auth, chat
 from contextlib import asynccontextmanager
 from app.db.init__db import create_tables
 
@@ -18,7 +18,7 @@ app = FastAPI(
 
 app.include_router(document_router)
 app.include_router(auth.router)
-
+app.include_router(chat.router)
 
 
 @app.post("/documents/uploads")

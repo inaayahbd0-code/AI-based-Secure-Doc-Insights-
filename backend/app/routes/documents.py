@@ -28,9 +28,9 @@ UPLOAD_DIRECTORY = Path("app/uploads")
 
 @router.post("/upload", response_model=DocumentResponse)
 async def upload_document(
-    file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    file: UploadFile = File(...),   # File is uploaded
+    db: AsyncSession = Depends(get_db), # Fetch a database session
+    current_user: User = Depends(get_current_user), # Fetch user
 ):
 
     # Allow only PDFs
@@ -43,7 +43,7 @@ async def upload_document(
     # Create uploads folder if it doesn't exist
     UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
-    # Generate unique filename
+    # Generate unique filename(stored_filename in db)
     unique_filename = f"{uuid.uuid4()}.pdf"
 
     destination = UPLOAD_DIRECTORY / unique_filename
@@ -58,7 +58,8 @@ async def upload_document(
     # Generate AI summary
     summary = generate_summary(extracted_text)
 
-    # Create database document
+    # Create database document(saves time, cost and api tokens)
+    # Databases like sqlite can handle large amounts of stored info by storing summary and extracted text
     new_document = Document(
         filename=file.filename,
         filepath=str(destination),
@@ -93,7 +94,7 @@ async def upload_document(
     return DocumentResponse.model_validate(new_document)
 
 
-@router.get("", response_model=list[DocumentResponse])
+@router.get("/documents", response_model=list[DocumentResponse])
 async def get_documents(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
