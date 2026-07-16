@@ -17,7 +17,7 @@ class DocumentChunk(Base):
     )
 
     document_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("files.id")
+        ForeignKey("documents.id")
     )
 
     chunk_text: Mapped[str] = mapped_column(
@@ -25,4 +25,4 @@ class DocumentChunk(Base):
     )
     embedding: Mapped[list[float] | None] = mapped_column(JSON,nullable=True)
     
-    document = relationship("File", back_populates="chunks")
+    document = relationship("Document", back_populates="chunks")

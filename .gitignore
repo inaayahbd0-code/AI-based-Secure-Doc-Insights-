@@ -7,6 +7,9 @@ __pycache__/
 app/uploads/
 backend/test_jwt.py
 backend/test_password.py
+*.db
+.pytest_cache/
+.venv/
 
 # Environment
 .env
@@ -15,3 +18,4 @@ backend/test_password.py
 # IDE/System
 .vscode/
 .DS_Store
+.idea/

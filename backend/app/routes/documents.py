@@ -16,7 +16,7 @@ from app.schemas.document import DocumentResponse
 from app.services.ai import generate_summary
 from app.services.chunk_service import create_chunks
 from app.services.pdf_service import extract_text_from_pdf
-
+from app.services.embedding_service import generate_embedding
 
 router = APIRouter(
     prefix="/documents",
@@ -58,12 +58,15 @@ async def upload_document(
     # Generate AI summary
     summary = generate_summary(extracted_text)
 
+    file_size = destination.stat().st_size
     # Create database document(saves time, cost and api tokens)
     # Databases like sqlite can handle large amounts of stored info by storing summary and extracted text
     new_document = Document(
         filename=file.filename,
+        stored_filename= unique_filename,
         filepath=str(destination),
-        filetype=file.content_type,
+        content_type=file.content_type,
+        file_size = file_size,
         extracted_text=extracted_text,
         summary=summary,
         status="completed",
@@ -82,9 +85,14 @@ async def upload_document(
 
     for chunk in chunk_data:
 
+        embedding = await generate_embedding(
+            chunk["chunk_text"]
+        )
+
         db_chunk = DocumentChunk(
             document_id=chunk["document_id"],
             chunk_text=chunk["chunk_text"],
+            embedding = embedding,
         )
 
         db.add(db_chunk)
@@ -110,8 +118,28 @@ async def get_documents(
 
     return documents
 
+@router.get("/{document_id}", response_model=DocumentResponse)
+async def get_document(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(Document).where(
+            Document.id == document_id,
+            Document.user_id == current_user.id,
+        )
+    )
 
-@router.get("/{document_id}")
+    document = result.scalar_one_or_none()
+
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return document
+
+
+@router.get("/{document_id}/download")
 async def download_document(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
@@ -142,3 +170,22 @@ async def download_document(
         path=document.filepath,
         filename=document.filename,
     )
+
+
+@router.delete("/documents/{document_id}")
+async def delete_document(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Document).where(Document.id == document_id, Document.user_id == current_user.id))
+    document = result.scalar_one_or_none()
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found. ")
+    
+    await db.delete(document)
+    await db.commit()
+
+    return {
+        "message": "Document deleted successfully."
+    }

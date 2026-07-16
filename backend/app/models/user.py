@@ -11,5 +11,5 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    documents = relationship("File", back_populates="user")
+    documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
     

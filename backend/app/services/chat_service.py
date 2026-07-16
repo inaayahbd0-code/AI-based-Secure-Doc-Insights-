@@ -21,6 +21,12 @@ async def chat_with_document(
         question = question,
         chunks=chunks,
     )
+    print("Retrieved:", len(relevant_chunks))
+
+    for i, chunk in enumerate(relevant_chunks):
+        print(f"\nChunk {i+1}")
+        print(chunk.chunk_text[:300])
+
     context = "\n\n".join(
     chunk.chunk_text
     for chunk in relevant_chunks
