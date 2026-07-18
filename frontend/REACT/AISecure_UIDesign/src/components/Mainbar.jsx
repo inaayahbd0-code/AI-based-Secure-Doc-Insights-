@@ -8,7 +8,7 @@ const Mainbar = ({ selectedocument }) => {
     <div>
 
       {/* Main Content */}
-      <div className="bg-gradient-to-b from-blue-950 via-blue-900 to-cyan-700 min-h-screen w-full">
+      <div className="bg-gradient-to-b from-blue-950 via-blue-900 pb-28 to-cyan-700 min-h-[500px] w-full">
 
         <div className="text-3xl font-bold text-center text-cyan-500 pt-8">
           AI SECURE DOCUMENT INSIGHTS
@@ -39,7 +39,7 @@ const Mainbar = ({ selectedocument }) => {
             type="file"
           />
 
-          <div className="border-blue-300 border-dashed border-2 min-h-screen w-3xl ml-55 p-6">
+          <div className="border-blue-300 border-dashed border-2 min-h-[500px] w-3xl ml-55 p-6">
 
             {selectedocument ? (
 

@@ -43,7 +43,7 @@ const Dashboard = () => {
       
         <div className="flex-1">
           <Mainbar selectedocument={selectedocument}/>
-          <Copilot/>
+          <Copilot selectedocument={selectedocument} />
         </div>
         
         
