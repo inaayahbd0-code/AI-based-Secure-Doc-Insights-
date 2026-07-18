@@ -8,6 +8,7 @@ class DocumentResponse(BaseModel):
     content_type: str
     created_at: datetime
     status: str
+    summary: str
 
     class Config:
         from_attributes = True
