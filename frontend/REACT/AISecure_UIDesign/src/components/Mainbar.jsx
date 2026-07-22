@@ -1,74 +1,106 @@
-import React from 'react';
+import React, { useState } from "react";
 
-const Mainbar = ({ selectedocument }) => {
+const Mainbar = ({ selectedocument, handleUpload }) => {
+    const [selectedFile, setSelectedFile] = useState(null);
 
-  console.log("Mainbar received:", selectedocument);
+    return (
+        <div className="flex-1 px-8 py-6">
 
-  return (
-    <div>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
 
-      {/* Main Content */}
-      <div className="bg-gradient-to-b from-blue-950 via-blue-900 pb-28 to-cyan-700 min-h-[500px] w-full">
+                <div>
+                    <h1 className="text-4xl font-bold text-cyan-400">
+                        DocQuery AI
+                    </h1>
 
-        <div className="text-3xl font-bold text-center text-cyan-500 pt-8">
-          AI SECURE DOCUMENT INSIGHTS
-        </div>
+                    <p className="text-slate-400 text-sm mt-1">
+                        AI-powered Secure Document Intelligence
+                    </p>
+                </div>
 
-        <div className="text-center text-white mt-4 text-xl">
-          {selectedocument
-            ? selectedocument.filename
-            : "No document selected"}
-        </div>
+                <div className="flex items-center gap-3">
 
-        <div className="text-center text-cyan-200">
-          {selectedocument
-            ? `Status: ${selectedocument.status}`
-            : ""}
-        </div>
+                    <input
+                        id="pdf-upload"
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                    />
 
-        <div>
+                    <label
+                        htmlFor="pdf-upload"
+                        className="cursor-pointer px-4 py-2 rounded-xl bg-indigo-900 border border-indigo-700 hover:border-cyan-400 transition-all text-sm"
+                    >
+                        Choose PDF
+                    </label>
 
-          <input
-            className="text-slate-100 m-4 ml-80 font-medium border-blue-700 border-2 rounded w-100 h-10"
-            type="url"
-            placeholder="Enter filepath..."
-          />
+                    <button
+                        onClick={() => handleUpload(selectedFile)}
+                        className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 transition-all font-medium"
+                    >
+                        Upload
+                    </button>
 
-          <input
-            className="hover:scale-110 duration-300 pt-2 text-center text-slate-100 h-10 font-medium bg-cyan-500 border-blue-700 border-2 rounded w-35"
-            type="file"
-          />
+                </div>
 
-          <div className="border-blue-300 border-dashed border-2 min-h-[500px] w-3xl ml-55 p-6">
+            </div>
 
-            {selectedocument ? (
+            {/* Current Document */}
 
-              <>
-                <h2 className="text-2xl text-cyan-300 font-bold mb-4">
-                  AI Summary
+            <div className="mb-5">
+
+                {selectedocument ? (
+
+                    <>
+                        <h2 className="text-lg font-semibold text-white">
+                            {selectedocument.filename}
+                        </h2>
+
+                        <p className="text-sm text-cyan-300 mt-1">
+                            Status • {selectedocument.status}
+                        </p>
+                    </>
+
+                ) : (
+
+                    <h2 className="text-slate-400">
+                        No document selected
+                    </h2>
+
+                )}
+
+            </div>
+
+            {/* Summary */}
+
+            <div className="rounded-2xl bg-slate-900/80 border border-indigo-700 shadow-xl p-6">
+
+                <h2 className="text-xl font-semibold text-cyan-300 mb-5">
+                    AI Summary
                 </h2>
 
-                <p className="leading-8 whitespace-pre-wrap text-white">
-                  {selectedocument.summary}
-                </p>
-              </>
+                {selectedocument ? (
 
-            ) : (
+                    <p className="text-slate-300 whitespace-pre-wrap leading-8">
+                        {selectedocument.summary}
+                    </p>
 
-              <div className="flex justify-center items-center h-full text-gray-400 text-xl">
-                Select a document from the sidebar.
-              </div>
+                ) : (
 
-            )}
+                    <div className="flex justify-center items-center h-72 text-slate-500">
 
-          </div>
+                        Select a document from the sidebar.
+
+                    </div>
+
+                )}
+
+            </div>
 
         </div>
-
-      </div>
-
-    </div>
-  );
+    );
 };
 
 export default Mainbar;

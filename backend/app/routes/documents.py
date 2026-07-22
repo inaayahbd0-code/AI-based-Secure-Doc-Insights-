@@ -172,7 +172,7 @@ async def download_document(
     )
 
 
-@router.delete("/documents/{document_id}")
+@router.delete("/{document_id}")
 async def delete_document(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
