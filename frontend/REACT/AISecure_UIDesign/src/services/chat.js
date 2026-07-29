@@ -9,3 +9,9 @@ export const askQuestion = async (documentId, question) => {
 
     return response.data;
 };
+
+export const getChatHistory = async (documentId) => {
+    const response = await api.get(`/chat/${documentId}`);
+
+    return response.data;
+};

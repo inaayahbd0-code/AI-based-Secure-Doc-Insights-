@@ -1,4 +1,5 @@
 from uuid import UUID
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -78,3 +79,30 @@ async def chat(
         "answer": answer
     }
 
+
+@router.get("/{document_id}")
+async def get_chat_history(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(Document).where(Document.id == document_id, Document.user_id == current_user.id,))
+
+    document = result.scalar_one_or_none()
+
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found.",)
+
+    result = await db.execute(select(Message).where(Message.document_id == document.id).order_by(Message.created_at))
+
+    messages = result.scalars().all()
+
+    return [
+        {
+            "id": str(message.id),
+            "role": message.role,
+            "content": message.content,
+            "created_at":message.created_at,
+        }
+        for message in messages
+    ]

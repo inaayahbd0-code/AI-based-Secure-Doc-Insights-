@@ -1,10 +1,31 @@
 import React, { useState } from "react";
-import { askQuestion } from "../services/chat";
+import { useEffect } from "react";
+import { askQuestion, getChatHistory } from "../services/chat";
 
 const Copilot = ({ selectedocument }) => {
 
     const [question, setQuestion] = useState("");
-    const [answer, setAnswer] = useState("");
+    const [messages, setMessages] = useState([]);
+    useEffect(() => {
+        const loadHistory = async () => {
+            if (!selectedocument) {
+                setMessages([]);
+                return;
+            }
+
+            try {
+                const history = await getChatHistory(
+                    selectedocument.id
+                );
+
+                setMessages(history);
+
+            } catch(error){
+                console.error(error);
+            }
+            };
+            loadHistory();
+        }, [selectedocument]);
 
     const handlesend = async () => {
 
@@ -22,7 +43,18 @@ const Copilot = ({ selectedocument }) => {
                 question
             );
 
-            setAnswer(response.answer);
+            setMessages((prev) => [
+                ...prev,
+
+                {
+                    role:"user",
+                    content:question,
+                },
+                {
+                    role:"assistant",
+                    content:response.answer,
+                },
+            ]);
             setQuestion("");
 
         } catch (error) {
@@ -33,68 +65,72 @@ const Copilot = ({ selectedocument }) => {
 
     return (
 
-        <div className="fixed bottom-5 left-[310px] right-8 z-20">
+    <div className="fixed bottom-5 left-[310px] right-8 z-20">
 
-            {/* AI Response */}
+        {messages.length > 0 && (
 
-            {answer && (
+            <div className="mb-4 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-xl p-5 max-h-80 overflow-y-auto">
 
-                <div className="mb-4 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-xl p-5">
+                {messages.map((message, index) => (
 
-                    <div className="flex items-center gap-2 mb-3">
+                    <div key={index} className="mb-4">
 
-                        <span className="text-cyan-400 text-lg">
-                            ✨
-                        </span>
+                        <p
+                            className={`font-semibold ${
+                                message.role === "user"
+                                    ? "text-cyan-300"
+                                    : "text-green-300"
+                            }`}
+                        >
+                            {message.role === "user" ? "You" : "AI"}
+                        </p>
 
-                        <h3 className="font-semibold text-cyan-300">
-                            AI Response
-                        </h3>
+                        <p className="text-slate-200 whitespace-pre-wrap">
+                            {message.content}
+                        </p>
 
                     </div>
 
-                    <p className="text-slate-200 leading-7 whitespace-pre-wrap">
-                        {answer}
-                    </p>
+                ))}
 
-                </div>
+            </div>
 
-            )}
+        )}
 
-            {/* Copilot */}
+        <div className="rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-2xl p-4">
 
-            <div className="rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-2xl p-4">
+            <div className="flex items-center gap-4">
 
-                <div className="flex items-center gap-4">
+                <input
+                    type="text"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    placeholder="Ask anything about this document..."
+                    className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 outline-none px-2"
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handlesend();
+                        }
+                    }}
+                />
 
-                    <input
-                        type="text"
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                        placeholder="Ask anything about this document..."
-                        className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 outline-none px-2"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                handlesend();
-                            }
-                        }}
-                    />
-
-                    <button
-                        onClick={handlesend}
-                        className="rounded-xl bg-cyan-500 hover:bg-cyan-400 px-6 py-2 font-semibold text-white transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/30"
-                    >
-                        Send
-                    </button>
-
-                </div>
+                <button
+                    onClick={handlesend}
+                    className="rounded-xl bg-cyan-500 hover:bg-cyan-400 px-6 py-2 font-semibold text-white transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/30"
+                >
+                    Send
+                </button>
 
             </div>
 
         </div>
 
-    );
+    </div>
+
+);
 
 };
 
 export default Copilot;
+            
+
