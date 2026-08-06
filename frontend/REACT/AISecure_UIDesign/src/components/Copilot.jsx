@@ -6,19 +6,24 @@ const Copilot = ({ selectedocument }) => {
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const messagesEndRef = useRef(null);
 
+    // Load chat history when document changes
     useEffect(() => {
 
         const loadHistory = async () => {
 
             if (!selectedocument) {
                 setMessages([]);
+                setError("");
                 return;
             }
 
             try {
+
+                setError("");
 
                 const history = await getChatHistory(
                     selectedocument.id
@@ -30,6 +35,12 @@ const Copilot = ({ selectedocument }) => {
 
                 console.error(error);
 
+                setMessages([]);
+
+                setError(
+                    "Unable to load chat history."
+                );
+
             }
 
         };
@@ -39,6 +50,7 @@ const Copilot = ({ selectedocument }) => {
     }, [selectedocument]);
 
 
+    // Automatically scroll to newest message
     useEffect(() => {
 
         messagesEndRef.current?.scrollIntoView({
@@ -51,17 +63,20 @@ const Copilot = ({ selectedocument }) => {
     const handlesend = async () => {
 
         if (!selectedocument) {
-            alert("Please select a document first.");
+            setError("Please select a document first.");
             return;
         }
 
-        if (!question.trim() || loading) return;
+        if (!question.trim() || loading) {
+            return;
+        }
 
         const currentQuestion = question;
 
         try {
 
             setLoading(true);
+            setError("");
             setQuestion("");
 
             const response = await askQuestion(
@@ -91,6 +106,11 @@ const Copilot = ({ selectedocument }) => {
 
             setQuestion(currentQuestion);
 
+            setError(
+                error.response?.data?.detail ||
+                "Unable to get an AI response. Please try again."
+            );
+
         } finally {
 
             setLoading(false);
@@ -102,7 +122,57 @@ const Copilot = ({ selectedocument }) => {
 
     return (
 
-        <div className="fixed bottom-5 left-[310px] right-8 z-30">
+        <div className="
+            fixed
+            bottom-5
+            left-[310px]
+            right-8
+            z-30
+        ">
+
+            {/* CHAT ERROR */}
+
+            {error && (
+
+                <div className="
+                    max-w-3xl
+                    mx-auto
+                    mb-3
+                    flex
+                    items-center
+                    justify-between
+                    rounded-xl
+                    border
+                    border-red-500/30
+                    bg-red-950/80
+                    backdrop-blur-md
+                    px-4
+                    py-3
+                    text-sm
+                    text-red-300
+                    shadow-lg
+                ">
+
+                    <span>
+                        ⚠️ {error}
+                    </span>
+
+                    <button
+                        onClick={() => setError("")}
+                        className="
+                            ml-4
+                            text-red-400
+                            hover:text-red-200
+                            transition-colors
+                        "
+                    >
+                        ✕
+                    </button>
+
+                </div>
+
+            )}
+
 
             {/* CHAT HISTORY */}
 
@@ -147,7 +217,11 @@ const Copilot = ({ selectedocument }) => {
                                     }`}
                                 >
 
-                                    <div className="text-[11px] opacity-60 mb-1">
+                                    <div className="
+                                        text-[11px]
+                                        opacity-60
+                                        mb-1
+                                    ">
                                         {message.role === "user"
                                             ? "You"
                                             : "✨ AI"}
@@ -163,11 +237,24 @@ const Copilot = ({ selectedocument }) => {
 
                         ))}
 
+
+                        {/* AI THINKING */}
+
                         {loading && (
 
                             <div className="flex justify-start">
 
-                                <div className="bg-slate-900 border border-indigo-700 text-cyan-300 px-4 py-3 rounded-2xl rounded-bl-md text-sm">
+                                <div className="
+                                    bg-slate-900
+                                    border
+                                    border-indigo-700
+                                    text-cyan-300
+                                    px-4
+                                    py-3
+                                    rounded-2xl
+                                    rounded-bl-md
+                                    text-sm
+                                ">
 
                                     <span className="animate-pulse">
                                         ✨ AI is thinking...
@@ -208,6 +295,7 @@ const Copilot = ({ selectedocument }) => {
                         type="text"
                         value={question}
                         onChange={(e) => setQuestion(e.target.value)}
+
                         onKeyDown={(e) => {
 
                             if (e.key === "Enter") {
@@ -215,12 +303,15 @@ const Copilot = ({ selectedocument }) => {
                             }
 
                         }}
+
                         placeholder={
                             selectedocument
                                 ? "Ask about this document..."
                                 : "Select a document to start chatting..."
                         }
+
                         disabled={!selectedocument || loading}
+
                         className="
                             flex-1
                             bg-transparent
@@ -236,6 +327,7 @@ const Copilot = ({ selectedocument }) => {
                     <button
                         onClick={handlesend}
                         disabled={!selectedocument || loading}
+
                         className={`
                             px-5
                             py-2.5
@@ -244,9 +336,12 @@ const Copilot = ({ selectedocument }) => {
                             font-semibold
                             transition-all
                             duration-300
+
                             ${
                                 !selectedocument || loading
+
                                     ? "bg-indigo-900 text-slate-500 cursor-not-allowed"
+
                                     : "bg-cyan-500 text-white hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-500/30"
                             }
                         `}
@@ -267,3 +362,4 @@ const Copilot = ({ selectedocument }) => {
 };
 
 export default Copilot;
+
