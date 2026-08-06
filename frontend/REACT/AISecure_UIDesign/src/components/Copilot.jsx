@@ -1,31 +1,52 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { askQuestion, getChatHistory } from "../services/chat";
 
 const Copilot = ({ selectedocument }) => {
 
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const messagesEndRef = useRef(null);
+
     useEffect(() => {
+
         const loadHistory = async () => {
+
             if (!selectedocument) {
                 setMessages([]);
                 return;
             }
 
             try {
+
                 const history = await getChatHistory(
                     selectedocument.id
                 );
 
                 setMessages(history);
 
-            } catch(error){
+            } catch (error) {
+
                 console.error(error);
+
             }
-            };
-            loadHistory();
-        }, [selectedocument]);
+
+        };
+
+        loadHistory();
+
+    }, [selectedocument]);
+
+
+    useEffect(() => {
+
+        messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth",
+        });
+
+    }, [messages]);
+
 
     const handlesend = async () => {
 
@@ -34,103 +55,215 @@ const Copilot = ({ selectedocument }) => {
             return;
         }
 
-        if (question.trim() === "") return;
+        if (!question.trim() || loading) return;
+
+        const currentQuestion = question;
 
         try {
 
+            setLoading(true);
+            setQuestion("");
+
             const response = await askQuestion(
                 selectedocument.id,
-                question
+                currentQuestion
             );
 
             setMessages((prev) => [
+
                 ...prev,
 
                 {
-                    role:"user",
-                    content:question,
+                    role: "user",
+                    content: currentQuestion,
                 },
+
                 {
-                    role:"assistant",
-                    content:response.answer,
+                    role: "assistant",
+                    content: response.answer,
                 },
+
             ]);
-            setQuestion("");
 
         } catch (error) {
+
             console.error(error);
+
+            setQuestion(currentQuestion);
+
+        } finally {
+
+            setLoading(false);
+
         }
 
     };
 
+
     return (
 
-    <div className="fixed bottom-5 left-[310px] right-8 z-20">
+        <div className="fixed bottom-5 left-[310px] right-8 z-30">
 
-        {messages.length > 0 && (
+            {/* CHAT HISTORY */}
 
-            <div className="mb-4 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-xl p-5 max-h-80 overflow-y-auto">
+            {messages.length > 0 && (
 
-                {messages.map((message, index) => (
+                <div className="
+                    mb-3
+                    max-w-3xl
+                    mx-auto
+                    max-h-64
+                    overflow-y-auto
+                    px-3
+                    py-3
+                    rounded-2xl
+                    bg-indigo-950/95
+                    backdrop-blur-xl
+                    border
+                    border-indigo-800
+                    shadow-2xl
+                ">
 
-                    <div key={index} className="mb-4">
+                    <div className="space-y-3">
 
-                        <p
-                            className={`font-semibold ${
-                                message.role === "user"
-                                    ? "text-cyan-300"
-                                    : "text-green-300"
-                            }`}
-                        >
-                            {message.role === "user" ? "You" : "AI"}
-                        </p>
+                        {messages.map((message, index) => (
 
-                        <p className="text-slate-200 whitespace-pre-wrap">
-                            {message.content}
-                        </p>
+                            <div
+                                key={message.id || index}
+                                className={`flex ${
+                                    message.role === "user"
+                                        ? "justify-end"
+                                        : "justify-start"
+                                }`}
+                            >
+
+                                <div
+                                    className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-6 ${
+                                        message.role === "user"
+
+                                            ? "bg-cyan-500 text-white rounded-br-md"
+
+                                            : "bg-slate-900 border border-indigo-700 text-slate-200 rounded-bl-md"
+                                    }`}
+                                >
+
+                                    <div className="text-[11px] opacity-60 mb-1">
+                                        {message.role === "user"
+                                            ? "You"
+                                            : "✨ AI"}
+                                    </div>
+
+                                    <div className="whitespace-pre-wrap">
+                                        {message.content}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                        {loading && (
+
+                            <div className="flex justify-start">
+
+                                <div className="bg-slate-900 border border-indigo-700 text-cyan-300 px-4 py-3 rounded-2xl rounded-bl-md text-sm">
+
+                                    <span className="animate-pulse">
+                                        ✨ AI is thinking...
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+                        <div ref={messagesEndRef} />
 
                     </div>
 
-                ))}
+                </div>
 
-            </div>
+            )}
 
-        )}
 
-        <div className="rounded-2xl bg-slate-900/90 backdrop-blur-md border border-indigo-700 shadow-2xl p-4">
+            {/* COMPOSER */}
 
-            <div className="flex items-center gap-4">
+            <div className="
+                max-w-3xl
+                mx-auto
+                rounded-2xl
+                bg-slate-950/95
+                backdrop-blur-xl
+                border
+                border-indigo-800
+                shadow-2xl
+                p-2
+            ">
 
-                <input
-                    type="text"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ask anything about this document..."
-                    className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 outline-none px-2"
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            handlesend();
+                <div className="flex items-center gap-2">
+
+                    <input
+                        type="text"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        onKeyDown={(e) => {
+
+                            if (e.key === "Enter") {
+                                handlesend();
+                            }
+
+                        }}
+                        placeholder={
+                            selectedocument
+                                ? "Ask about this document..."
+                                : "Select a document to start chatting..."
                         }
-                    }}
-                />
+                        disabled={!selectedocument || loading}
+                        className="
+                            flex-1
+                            bg-transparent
+                            text-slate-100
+                            placeholder:text-slate-500
+                            outline-none
+                            px-4
+                            py-3
+                            text-sm
+                        "
+                    />
 
-                <button
-                    onClick={handlesend}
-                    className="rounded-xl bg-cyan-500 hover:bg-cyan-400 px-6 py-2 font-semibold text-white transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/30"
-                >
-                    Send
-                </button>
+                    <button
+                        onClick={handlesend}
+                        disabled={!selectedocument || loading}
+                        className={`
+                            px-5
+                            py-2.5
+                            rounded-xl
+                            text-sm
+                            font-semibold
+                            transition-all
+                            duration-300
+                            ${
+                                !selectedocument || loading
+                                    ? "bg-indigo-900 text-slate-500 cursor-not-allowed"
+                                    : "bg-cyan-500 text-white hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-500/30"
+                            }
+                        `}
+                    >
+
+                        {loading ? "..." : "Send"}
+
+                    </button>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
-
-);
+    );
 
 };
 
 export default Copilot;
-            
-

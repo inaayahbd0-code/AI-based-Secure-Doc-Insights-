@@ -8,14 +8,27 @@ import { getDocuments, deleteDocument } from "../services/document";
 const Dashboard = () => {
     const [documents, setDocuments] = useState([]);
     const [selectedocument, setSelectedDocument] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const handleUpload = async (file) => {
+
+        if (!file) {
+            alert("Please select a file to upload.");
+            return;
+        }
+
         try {
+
+            setUploading(true);
+
             const newDocument = await uploadDocument(file);
             await fetchDocuments();
             setSelectedDocument(newDocument);
         } catch (error) {
             console.error(error);
+            alert("Failed to upload document. Please try again.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -70,6 +83,7 @@ const Dashboard = () => {
                     <Mainbar
                         selectedocument={selectedocument}
                         handleUpload={handleUpload}
+                        uploading = {uploading}
                     />
 
                     <Copilot

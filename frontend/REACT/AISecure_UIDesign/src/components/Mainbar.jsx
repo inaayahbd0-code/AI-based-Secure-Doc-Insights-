@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Mainbar = ({ selectedocument, handleUpload }) => {
+const Mainbar = ({ selectedocument, handleUpload, uploading }) => {
     const [selectedFile, setSelectedFile] = useState(null);
 
     return (
@@ -38,9 +38,17 @@ const Mainbar = ({ selectedocument, handleUpload }) => {
 
                     <button
                         onClick={() => handleUpload(selectedFile)}
-                        className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 transition-all font-medium"
-                    >
-                        Upload
+                        disabled={uploading}
+                        className={`ml-4 px-6 py-2 rounded-lg font-semibold text-white transition-all duration-300 ${
+                                    uploading
+                                        ? "bg-cyan-800 cursor-not-allowed"
+                                        : "bg-cyan-500 hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-500/30"
+                                }`}
+                            >
+
+                                {uploading ? "Uploading..." : "Upload"}
+                    
+                        
                     </button>
 
                 </div>
